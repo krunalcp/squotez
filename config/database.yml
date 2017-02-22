@@ -1,0 +1,17 @@
+development:
+  adapter: postgresql
+  encoding: utf8
+  database: softices_squotez
+  pool: 5
+  username: android
+  password: root
+  host: localhost
+
+test:
+  adapter: postgresql
+  encoding: utf8
+  database: softices_squotez_test
+  pool: 5
+  username: android
+  password: root
+  host: localhost
