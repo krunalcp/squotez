@@ -1,5 +1,4 @@
 class NotificationCategory < ApplicationRecord
-
   #
   # Associations
   #

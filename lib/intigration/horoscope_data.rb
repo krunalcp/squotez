@@ -3,6 +3,9 @@ require 'open-uri'
 
 module Intigration
   class HoroscopeData
+    #
+    # create today horoscope
+    #
     def self.create_horoscope_content
       @today = Date.today
       final_json = {}
@@ -18,15 +21,21 @@ module Intigration
                                     ENV['API_DOMAIN_1']
                                   )
                                 ).css("div#cbp-contentslider ul li#slide#{slide_number}")
-        final_json["#{sign_name}"] =  self.process_horoscope_json(
-                                        theastrologer_content,
-                                        little_astro_content,
-                                        slide_number, sign_name
-                                      )
+        final_json[sign_name] = self.process_horoscope_json(
+                                  theastrologer_content,
+                                  little_astro_content,
+                                  slide_number,
+                                  sign_name
+                                )
       end
     end
 
-    def self.process_horoscope_json(theastrologer_content, little_astro_content, slide_number, sign_name)
+    def self.process_horoscope_json(
+          theastrologer_content,
+          little_astro_content,
+          slide_number,
+          sign_name
+        )
       return {} if theastrologer_content.blank? and little_astro_content.blank? and slide_number.blank?
 
       horoscope = HoroscopeData.new(
@@ -38,7 +47,12 @@ module Intigration
       return horoscope.get_horoscope_json
     end
 
-    def initialize(theastrologer_content, little_astro_content, slide_number, sign_name)
+    def initialize(
+          theastrologer_content,
+          little_astro_content,
+          slide_number,
+          sign_name
+        )
       @theastrologer_content = theastrologer_content
       @little_astro_content  = little_astro_content
       @slide_number          = slide_number
@@ -51,34 +65,42 @@ module Intigration
       first_date_of_current_year  = Date.today.at_beginning_of_year
       horoscope_json = {}
       horoscope_json["daily"]     = create_daily_data
-      horoscope_json["weekly"]    = create_weekly_data if Date.today == first_date_of_current_week
+      horoscope_json["weekly"]    = create_weekly_data  if Date.today == first_date_of_current_week
       horoscope_json["monthly"]   = create_monthly_data if Date.today == first_date_of_current_month
-      horoscope_json["yearly"]    = create_yearly_data if Date.today == first_date_of_current_year
+      horoscope_json["yearly"]    = create_yearly_data  if Date.today == first_date_of_current_year
     end
 
+    #
+    # Create a daily data of horoscope
+    #
     def create_daily_data
-      data = {
-              sign: @sign_name.to_s,
-              duration: 'daily',
-              horoscope_text: get_daily_horoscope,
-            }
+      data =  {
+                sign: @sign_name.to_s,
+                duration: 'daily',
+                horoscope_text: get_daily_horoscope,
+              }
       @horoscope = Horoscope.new(data)
-      @horoscope.save
-      intensity = @theastrologer_content.css("div.row.daily-meta div[1] p[1]").text.split(':').last.gsub(' ', '').to_s
-      keywords  = @theastrologer_content.css("div.row.daily-meta div[2] p[1]").text.split(':').last.gsub(' ', '')
-      mood      = @theastrologer_content.css("div.row.daily-meta div[1] p[2]").text.split(':').last.gsub(' ', '')
-      @horoscope.other_details.create(
-        detail_type: "intensity",
-        detail: intensity
-      ) if @horoscope.save
-      @horoscope.other_details.create(
-        detail_type: "keywords",
-        detail: keywords
-      ) if @horoscope.save
-      @horoscope.other_details.create(
-        detail_type: "mood",
-        detail: mood
-      ) if @horoscope.save
+      if @horoscope.save
+        intensity = @theastrologer_content.css("div.row.daily-meta div[1] p[1]").text.split(':').last.gsub(' ', '').to_s
+        keywords  = @theastrologer_content.css("div.row.daily-meta div[2] p[1]").text.split(':').last.gsub(' ', '')
+        mood      = @theastrologer_content.css("div.row.daily-meta div[1] p[2]").text.split(':').last.gsub(' ', '')
+        @horoscope.other_details.create(
+          [
+            {
+              detail_type: "intensity",
+              detail: intensity
+            },
+            {
+              detail_type: "keywords",
+              detail: keywords
+            },
+            {
+              detail_type: "mood",
+              detail: mood
+            }
+          ]
+        )
+      end
     end
 
     def get_daily_horoscope
@@ -89,6 +111,9 @@ module Intigration
       return daily_horoscope
     end
 
+    #
+    # Create a weekly data of horoscope
+    #
     def create_weekly_data
       number = @slide_number.to_i + 1
       data_content =  Nokogiri::HTML(
@@ -98,14 +123,17 @@ module Intigration
                       ).css("div.shareable-section-wrapper")
       return {} if data_content.blank?
 
-      data = {
-              sign: @sign_name.to_s,
-              duration: "weekly",
-              horoscope_text: data_content.css("div[#{number}]").text.split(' ')[1..-1].join(' ')
-            } if data_content
+      data =  {
+                sign: @sign_name.to_s,
+                duration: "weekly",
+                horoscope_text: data_content.css("div[#{number}]").text.split(' ')[1..-1].join(' ')
+              } if data_content
       Horoscope.create(data) if data_content and data
     end
 
+    #
+    # Create a monthly data of horoscope
+    #
     def create_monthly_data
       number = @slide_number.to_i + 1
       monthly_data =  Nokogiri::HTML(
@@ -114,14 +142,17 @@ module Intigration
                         )
                       ).css("div.shareable-section-wrapper").last
 
-      data = {
-              sign: @sign_name.to_s,
-              duration: "monthly",
-              horoscope_text: monthly_data.css("div[#{number}]").text.split(' ')[1..-1].join(' ')
-            } if monthly_data
+      data =  {
+                sign: @sign_name.to_s,
+                duration: "monthly",
+                horoscope_text: monthly_data.css("div[#{number}]").text.split(' ')[1..-1].join(' ')
+              } if monthly_data
       Horoscope.create(data) if monthly_data and data
     end
 
+    #
+    # Create a yearly data of horoscope
+    #
     def create_yearly_data
       number = @slide_number.to_i + 1
       yearly_data = Nokogiri::HTML(
@@ -136,15 +167,22 @@ module Intigration
         final_data = final_data + para.text + "</br></br></t>"
       end
 
-      data = {
-              sign: @sign_name.to_s,
-              duration: "yearly",
-              horoscope_text: final_data
-            } if final_data
+      data =  {
+                sign: @sign_name.to_s,
+                duration: "yearly",
+                horoscope_text: final_data
+              } if final_data
       Horoscope.create(data) if final_data and data
     end
 
-    def self.create_yearly_data_from_seed(slide_number, sign_name, data_date)
+    #
+    # Create a yearly data of horoscope in seed file
+    #
+    def self.create_yearly_data_from_seed(
+          slide_number,
+          sign_name,
+          data_date
+        )
       number = slide_number.to_i + 1
       yearly_data = Nokogiri::HTML(
                       open(
@@ -167,6 +205,9 @@ module Intigration
       Horoscope.create(data) if final_data and data
     end
 
+    #
+    # Create a monthly data of horoscope in seed file
+    #
     def self.create_monthly_data_from_seed(
           slide_number,
           sign_name,
@@ -188,7 +229,14 @@ module Intigration
       Horoscope.create(data) if monthly_data and data
     end
 
-    def self.create_weekly_data_from_seed(slide_number, sign_name, data_date)
+    #
+    # Create a weekly data of horoscope in seed file
+    #
+    def self.create_weekly_data_from_seed(
+          slide_number,
+          sign_name,
+          data_date
+        )
       number = slide_number.to_i + 1
       data_content =  Nokogiri::HTML(
                         open(
@@ -197,12 +245,12 @@ module Intigration
                       ).css("div.shareable-section-wrapper")
       return {} if data_content.blank?
 
-      data = {
-              sign: sign_name.to_s,
-              duration: "weekly",
-              horoscope_text: data_content.css("div[#{number}]").text.split(' ')[1..-1].join(' '),
-              created_at: data_date
-            } if data_content
+      data =  {
+                sign: sign_name.to_s,
+                duration: "weekly",
+                horoscope_text: data_content.css("div[#{number}]").text.split(' ')[1..-1].join(' '),
+                created_at: data_date
+              } if data_content
       Horoscope.create(data) if data_content and data
     end
   end

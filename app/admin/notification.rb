@@ -1,14 +1,16 @@
 ActiveAdmin.register Notification do
-  permit_params :notification_text,
-                :type,
-                :language,
-                :author,
+  permit_params(
+    :notification_text,
+    :type,
+    :language,
+    :author,
     categories_attributes:[
       :id,
       :name,
       :type,
       :_destroy
     ]
+  )
 
   filter :notification_text
   filter :type
@@ -38,6 +40,7 @@ ActiveAdmin.register Notification do
     end
     f.actions
   end
+
   show do
     panel "Notification" do
       attributes_table_for notification do

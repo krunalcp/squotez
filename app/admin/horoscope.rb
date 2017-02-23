@@ -1,7 +1,8 @@
 ActiveAdmin.register Horoscope do
-  permit_params :sign,
-                :duration,
-                :horoscope_text,
+  permit_params(
+    :sign,
+    :duration,
+    :horoscope_text,
     other_details_attributes: [
       :id,
       :detailable_type,
@@ -9,7 +10,8 @@ ActiveAdmin.register Horoscope do
       :detail,
       :_destroy
     ]
-  
+  )
+
   filter :sign
   filter :duration
   filter :created_at
@@ -24,12 +26,13 @@ ActiveAdmin.register Horoscope do
     column :updated_at
     actions
   end
+
   form do |f|
     f.inputs "Horoscope" do
       f.input :sign
       f.input :duration
       f.input :horoscope_text
-      if f.object.new_record? == false
+      unless f.object.new_record?
         f.has_many :other_details, allow_destroy: true, new_record: true do |ot|
           ot.input :detailable_type
           ot.input :detail_type

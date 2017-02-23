@@ -1,11 +1,13 @@
 ActiveAdmin.register User do
-  permit_params :first_name,
-                :last_name,
-                :birth_date,
-                :birth_sign,
-                :gender,
-                :email,
-                :contact_no
+  permit_params(
+    :first_name,
+    :last_name,
+    :birth_date,
+    :birth_sign,
+    :gender,
+    :email,
+    :contact_no
+  )
 
   filter :first_name
   filter :last_name

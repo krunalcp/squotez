@@ -2,7 +2,7 @@ class Api::V1::UserDatasController < Api::ApiController
   skip_before_action :verify_authenticity_token
 
   def create
-    if User.exists?(:email => params[:email]) == false
+    unless User.exists?(email: params[:email])
       user = User.create(user_params)
       render(
         json: {

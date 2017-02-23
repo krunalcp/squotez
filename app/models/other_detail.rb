@@ -1,5 +1,4 @@
 class OtherDetail < ApplicationRecord
-
   #
   # Associations
   #
