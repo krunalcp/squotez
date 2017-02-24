@@ -1,0 +1,66 @@
+# step:1
+  #machine: adjust the behavior of the virtual machine (VM).
+  # machine:
+  #  timezone:
+  #   America/Los_Angeles
+  # ruby:
+  #   version: 1.9.3-p0-falcon
+
+# step:2
+  # checkout: checkout and clone code from a repository.
+  # checkout:
+  #   post:
+  #     - git clone url
+
+# step:3
+  # dependencies: install your project’s language-specific dependencies.
+  # dependencies:
+  #   post: 
+  #     - bundle install
+
+# step:4
+  # database: prepare a database for tests.
+  # database:
+  #   override:
+  #     - mv config/database.ci.yml config/database.yml
+  #     - bundle exec rake db:create db:schema:load --trace
+
+# step:5
+  # compile: compile your project.
+  # compile:
+  #   override:
+  #     - bundle exec middleman build --verbose
+
+# step:6
+  # test: run your tests.
+  # test:
+  #   post:
+  #   - bundle exec rspec
+
+# step:7
+  # deployment: deploy your code to your web servers.
+  # deployment:
+  #   production:
+  #     branch: production
+  #     commands:
+  #       - ./deploy_prod.sh
+
+#
+# We can config the machine on server where we want to run over project.
+#
+machine:
+  ruby: 2.3.1
+
+#
+# We write dependencies in this section of circle ci.
+#
+dependencies:
+  post: 
+    - bundle install
+
+#
+# Here we can write command for test cases. 
+#
+test:
+  post:
+    - bundle exec rspec
